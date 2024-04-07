@@ -1,0 +1,46 @@
+services:
+  server:
+    build:
+      target: run
+      args:
+        SERVER_PORT: $SERVER_PORT
+    ports:
+      - "$SERVER_PORT:$SERVER_PORT"
+    environment:
+      server_url: http://localhost:$SERVER_PORT
+      cors_allowed_origins: '["http://localhost:$SERVER_PORT"]'
+    secrets:
+      - db_url
+    depends_on:
+      database:
+        condition: service_healthy
+  
+  database:
+    image: postgres:16
+    healthcheck:
+      test: pg_isready -U $POSTGRES_USER -d $POSTGRES_DATABASE
+      interval: 3s
+      retries: 15
+      start_period: 5s
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: $POSTGRES_DATABASE
+      POSTGRES_USER_FILE: "/run/secrets/db_user"
+      POSTGRES_PASSWORD_FILE: "/run/secrets/db_password"
+    secrets:
+      - db_user
+      - db_password
+
+
+secrets:
+  db_url:
+    environment: DB_URL
+  db_user:
+    environment: POSTGRES_USER
+  db_password:
+    environment: POSTGRES_PASSWORD
+
+
+volumes:
+  db_data:
