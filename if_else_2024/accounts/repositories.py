@@ -29,13 +29,13 @@ class AccountRepository:
     ):
         conditions = [true()]
         if first_name is not None:
-            conditions.append(Account.first_name.contains(first_name))
+            conditions.append(Account.first_name.icontains(first_name))
 
         if last_name is not None:
-            conditions.append(Account.last_name.contains(last_name))
+            conditions.append(Account.last_name.icontains(last_name))
 
         if email is not None:
-            conditions.append(Account.email.contains(email))
+            conditions.append(Account.email.icontains(email))
 
         q = (
             select(Account)

@@ -9,8 +9,8 @@ class AccountDto(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    first_name: Annotated[str, Field(alias="firstName")]
-    last_name: Annotated[str, Field(alias="lastName")]
+    first_name: Annotated[str, Field(serialization_alias="firstName")]
+    last_name: Annotated[str, Field(serialization_alias="lastName")]
     email: str
 
 

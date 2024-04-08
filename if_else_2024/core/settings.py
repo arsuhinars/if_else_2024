@@ -8,3 +8,6 @@ class AppSettings(BaseSettings):
     server_url: str | None = None
     cors_allowed_origins: list[str]
     auth_session_lifetime: int = 3600
+
+    create_fake_accounts: bool = False
+    fake_accounts_count: int = 100

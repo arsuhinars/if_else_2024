@@ -24,6 +24,7 @@ from if_else_2024.core.exceptions import (
     handle_validation_exception,
 )
 from if_else_2024.core.settings import AppSettings
+from if_else_2024.core.utils import FakeAccountsCreator
 
 
 def create_app() -> FastAPI:
@@ -79,14 +80,24 @@ def _setup_app_dependencies(app: FastAPI):
         auth_repository, account_repository, settings.auth_session_lifetime
     )
 
-    app.state.accounts_service = account_service
+    app.state.account_service = account_service
     app.state.auth_service = auth_service
 
 
 @asynccontextmanager
 async def _app_lifespan(app: FastAPI):
+    settings: AppSettings = app.state.settings
     db: DatabaseManager = app.state.database_manager
+    fake_accounts_creator = FakeAccountsCreator(settings.fake_accounts_count)
+
+    if settings.create_fake_accounts:
+        async with db.create_session() as session:
+            await fake_accounts_creator.create(session)
 
     await db.initialize()
     yield
     await db.dispose()
+
+    if settings.create_fake_accounts:
+        async with db.create_session() as session:
+            await fake_accounts_creator.release(session)
