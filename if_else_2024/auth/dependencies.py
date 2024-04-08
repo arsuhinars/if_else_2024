@@ -10,8 +10,12 @@ from if_else_2024.core.exceptions import UnauthorizedException
 
 session_id_scheme = APIKeyCookie(
     name="id",
+    auto_error=False,
     scheme_name="Session id",
-    description="Авторизация по id сессии через cookie",
+    description=(
+        "Авторизация по id сессии через cookie. id представлен в виде "
+        "уникального UUID"
+    ),
 )
 
 

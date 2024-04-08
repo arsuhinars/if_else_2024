@@ -2,10 +2,12 @@ import logging
 import sys
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 # isort: off
+from if_else_2024.auth.dependencies import authenticate_user
 from if_else_2024.core.db_manager import DatabaseManager
 
 # isort: on
@@ -16,7 +18,11 @@ from if_else_2024.accounts.services import AccountService
 from if_else_2024.auth.repositories import AuthRepository
 from if_else_2024.auth.routers import router as auth_router
 from if_else_2024.auth.services import AuthService
-from if_else_2024.core.exceptions import AppException, handle_app_exception
+from if_else_2024.core.exceptions import (
+    AppException,
+    handle_app_exception,
+    handle_validation_exception,
+)
 from if_else_2024.core.settings import AppSettings
 
 
@@ -31,6 +37,10 @@ def create_app() -> FastAPI:
         servers=[
             {"url": settings.server_url, "description": "Локальный сервер"},
         ],
+        dependencies=[Depends(authenticate_user)],
+        responses={
+            400: {"description": "Неверный формат входных данных"},
+        },
     )
 
     """ Setup global dependencies """
@@ -53,6 +63,7 @@ def create_app() -> FastAPI:
 
     """ Setup exception handlers """
     app.add_exception_handler(AppException, handle_app_exception)
+    app.add_exception_handler(RequestValidationError, handle_validation_exception)
 
     return app
 
