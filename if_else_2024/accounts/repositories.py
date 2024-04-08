@@ -13,10 +13,10 @@ class AccountRepository:
         s = await session.execute(q)
         return s.scalar_one_or_none()
 
-    async def exists_by_email(self, session: AsyncSession, email: str) -> bool:
-        q = exists().where(Account.email == email)
+    async def exists_by_email(self, session: AsyncSession, email: str):
+        q = select(exists().where(Account.email == email))
         s = await session.execute(q)
-        return s.scalar()
+        return s.scalar_one()
 
     async def search(
         self,

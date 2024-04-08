@@ -5,13 +5,17 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+# isort: off
+from if_else_2024.core.db_manager import DatabaseManager
+
+# isort: on
+
 from if_else_2024.accounts.repositories import AccountRepository
 from if_else_2024.accounts.routers import router as accounts_router
 from if_else_2024.accounts.services import AccountService
 from if_else_2024.auth.repositories import AuthRepository
 from if_else_2024.auth.routers import router as auth_router
 from if_else_2024.auth.services import AuthService
-from if_else_2024.core.db_manager import DatabaseManager
 from if_else_2024.core.exceptions import AppException, handle_app_exception
 from if_else_2024.core.settings import AppSettings
 

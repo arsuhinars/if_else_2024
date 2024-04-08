@@ -10,19 +10,19 @@ from if_else_2024.core.settings import AppSettings
 
 
 def get_settings(request: Request) -> AppSettings:
-    return request.state.settings
+    return request.app.state.settings
 
 
 def get_database_manager(request: Request) -> DatabaseManager:
-    return request.state.database_manager
+    return request.app.state.database_manager
 
 
 def get_account_service(request: Request) -> AccountService:
-    return request.state.account_service
+    return request.app.state.account_service
 
 
 def get_auth_service(request: Request) -> AuthService:
-    return request.state.auth_service
+    return request.app.state.auth_service
 
 
 async def get_db_session(db: Annotated[DatabaseManager, Depends(get_database_manager)]):

@@ -27,7 +27,7 @@ class AuthService:
         self._auth_session_lifetime = auth_session_lifetime
 
     async def register(self, session: AsyncSession, dto: RegisterAccountDto):
-        if await self._account_repository.exists_by_email(dto.email):
+        if await self._account_repository.exists_by_email(session, dto.email):
             raise EntityAlreadyExistsException(
                 "Account with given email already exists"
             )
@@ -53,8 +53,11 @@ class AuthService:
         ):
             raise UnauthorizedException("Invalid credentials")
 
-        if account.auth_session is not None:
-            await session.delete(account.auth_session)
+        auth_session = await account.awaitable_attrs.auth_session
+
+        if auth_session is not None:
+            await session.delete(auth_session)
+            await session.flush()
 
         auth_session = AuthSession(account_id=account.id, account=account)
         account.auth_session = auth_session

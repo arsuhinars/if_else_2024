@@ -45,3 +45,4 @@ class DatabaseManager:
                     exc_info=ex,
                 )
                 await session.rollback()
+                raise ex

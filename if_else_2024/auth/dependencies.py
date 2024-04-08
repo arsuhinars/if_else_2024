@@ -1,17 +1,24 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Cookie, Depends
+from fastapi import Depends
+from fastapi.security import APIKeyCookie
 
 from if_else_2024.auth.models import AuthSession
 from if_else_2024.core.dependencies import AuthServiceDep, DbSessionDep
 from if_else_2024.core.exceptions import UnauthorizedException
 
+session_id_scheme = APIKeyCookie(
+    name="id",
+    scheme_name="Session id",
+    description="Авторизация по id сессии через cookie",
+)
+
 
 async def authenticate_user(
     auth_service: AuthServiceDep,
     session: DbSessionDep,
-    raw_id: Annotated[str | None, Cookie()],
+    raw_id: Annotated[str | None, Depends(session_id_scheme)] = None,
 ):
     if raw_id is None:
         return None

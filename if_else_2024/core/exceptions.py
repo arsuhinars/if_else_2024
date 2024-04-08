@@ -24,25 +24,17 @@ class AppException(Exception):
 
 
 class EntityNotFoundException(AppException):
-    def __init__(self, entity_class: type | None = None):
+    def __init__(self, details: str | None = None):
         super().__init__(
-            (
-                "Required entity was not found"
-                if entity_class is None
-                else f"Required entity '{entity_class.__name__}' was not found"
-            ),
+            ("Required entity was not found" if details is None else details),
             status.HTTP_404_NOT_FOUND,
         )
 
 
 class EntityAlreadyExistsException(AppException):
-    def __init__(self, entity_class: type | None = None):
+    def __init__(self, details: str | None = None):
         super().__init__(
-            (
-                "Given entity already exists"
-                if entity_class is None
-                else f"Given entity '{entity_class.__name__}' already exists"
-            ),
+            ("Given entity already exists" if details is None else details),
             status.HTTP_409_CONFLICT,
         )
 
