@@ -17,7 +17,7 @@ class Account(Base):
     password_hash: Mapped[str]
 
     auth_session: Mapped[Optional["AuthSession"]] = relationship(
-        back_populates="account"
+        back_populates="account", cascade="save-update, merge, delete"
     )
 
     # TODO: add indexes
