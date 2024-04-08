@@ -5,9 +5,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from if_else_2024.accounts.repositories import AccountRepository
 from if_else_2024.accounts.routers import router as accounts_router
+from if_else_2024.accounts.services import AccountService
+from if_else_2024.auth.repositories import AuthRepository
 from if_else_2024.auth.routers import router as auth_router
+from if_else_2024.auth.services import AuthService
 from if_else_2024.core.db_manager import DatabaseManager
+from if_else_2024.core.exceptions import AppException, handle_app_exception
 from if_else_2024.core.settings import AppSettings
 
 
@@ -27,6 +32,7 @@ def create_app() -> FastAPI:
     """ Setup global dependencies """
     app.state.settings = settings
     app.state.database_manager = DatabaseManager(settings.db_url)
+    _setup_app_dependencies(app)
 
     """ Setup middlewares """
     app.add_middleware(
@@ -41,7 +47,25 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(accounts_router)
 
+    """ Setup exception handlers """
+    app.add_exception_handler(AppException, handle_app_exception)
+
     return app
+
+
+def _setup_app_dependencies(app: FastAPI):
+    settings: AppSettings = app.state.settings
+
+    account_repository = AccountRepository()
+    auth_repository = AuthRepository()
+
+    account_service = AccountService(account_repository)
+    auth_service = AuthService(
+        auth_repository, account_repository, settings.auth_session_lifetime
+    )
+
+    app.state.accounts_service = account_service
+    app.state.auth_service = auth_service
 
 
 @asynccontextmanager
@@ -49,7 +73,5 @@ async def _app_lifespan(app: FastAPI):
     db: DatabaseManager = app.state.database_manager
 
     await db.initialize()
-
     yield
-
     await db.dispose()

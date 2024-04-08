@@ -7,3 +7,4 @@ class AppSettings(BaseSettings):
     db_url: str
     server_url: str | None = None
     cors_allowed_origins: list[str]
+    auth_session_lifetime: int = 3600

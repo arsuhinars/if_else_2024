@@ -13,6 +13,8 @@ pydantic = {extras = ["email"], version = "^2.6.4"}
 pydantic-settings = "^2.2.1"
 sqlalchemy = "^2.0.29"
 psycopg = {extras = ["binary"], version = "^3.1.18"}
+passlib = "^1.7.4"
+bcrypt = "^4.1.2"
 
 
 [build-system]

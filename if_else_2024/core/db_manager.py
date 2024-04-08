@@ -18,8 +18,12 @@ from if_else_2024.accounts.models import Account
 
 class DatabaseManager:
     def __init__(self, db_url: str):
-        self._engine = create_async_engine(db_url)
-        self._sessionmaker = async_sessionmaker(self._engine, expire_on_commit=False)
+        self._engine = create_async_engine(
+            db_url,
+        )
+        self._sessionmaker = async_sessionmaker(
+            self._engine, expire_on_commit=False, autoflush=False
+        )
 
     async def initialize(self):
         async with self._engine.begin() as connection:
