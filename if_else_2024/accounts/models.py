@@ -1,6 +1,6 @@
+# flake8: noqa: F821
 from typing import Optional
 
-# flake8: noqa: F821
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -19,6 +19,7 @@ class Account(Base):
     auth_session: Mapped[Optional["AuthSession"]] = relationship(
         back_populates="account", cascade="save-update, merge, delete"
     )
+    regions: Mapped[list["Region"]] = relationship(back_populates="account")
 
     # TODO: add indexes
     __table_args__ = (UniqueConstraint("email"),)

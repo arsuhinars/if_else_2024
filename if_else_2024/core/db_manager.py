@@ -14,6 +14,8 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 # isort: off
 from if_else_2024.accounts.models import Account
+from if_else_2024.auth.models import AuthSession
+from if_else_2024.regions.models import RegionType, Region
 
 
 class DatabaseManager:

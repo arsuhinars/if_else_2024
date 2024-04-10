@@ -57,6 +57,14 @@ class ForbiddenException(AppException):
         )
 
 
+class IntegrityBreachException(AppException):
+    def __init__(self, details: str | None = None):
+        super().__init__(
+            "Integrity breach error" if details is None else details,
+            status.HTTP_400_BAD_REQUEST,
+        )
+
+
 def handle_app_exception(request: Request, exception: AppException):
     return JSONResponse(
         status_code=exception.status_code,

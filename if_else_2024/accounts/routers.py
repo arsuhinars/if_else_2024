@@ -86,7 +86,15 @@ async def update_account_by_id(
 @router.delete(
     "/{id}",
     summary="Удалить аккаунт по id",
+    description=(
+        "_Отличия от задания:_\n"
+        "Добавил ошибку с кодом 400 для того, чтобы избежать нарушения "
+        "целостности в БД (поле accountId у региона)"
+    ),
     responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Аккаунт является создателем какого-либо региона"
+        },
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Запрос от неавторизованного аккаунта"
         },

@@ -7,7 +7,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 # isort: off
-from if_else_2024.auth.dependencies import authenticate_user
 from if_else_2024.core.db_manager import DatabaseManager
 
 # isort: on
@@ -15,6 +14,7 @@ from if_else_2024.core.db_manager import DatabaseManager
 from if_else_2024.accounts.repositories import AccountRepository
 from if_else_2024.accounts.routers import router as accounts_router
 from if_else_2024.accounts.services import AccountService
+from if_else_2024.auth.dependencies import authenticate_user
 from if_else_2024.auth.repositories import AuthRepository
 from if_else_2024.auth.routers import router as auth_router
 from if_else_2024.auth.services import AuthService
@@ -25,6 +25,8 @@ from if_else_2024.core.exceptions import (
 )
 from if_else_2024.core.settings import AppSettings
 from if_else_2024.core.utils import FakeAccountsCreator
+from if_else_2024.regions.repositories import RegionRepository, RegionTypeRepository
+from if_else_2024.regions.services import RegionService, RegionTypeService
 
 
 def create_app() -> FastAPI:
@@ -74,14 +76,22 @@ def _setup_app_dependencies(app: FastAPI):
 
     account_repository = AccountRepository()
     auth_repository = AuthRepository()
+    region_repository = RegionRepository()
+    region_type_repository = RegionTypeRepository()
 
-    account_service = AccountService(account_repository)
+    account_service = AccountService(account_repository, region_repository)
     auth_service = AuthService(
         auth_repository, account_repository, settings.auth_session_lifetime
     )
+    region_service = RegionService(
+        region_repository, region_type_repository, account_service
+    )
+    region_type_service = RegionTypeService(region_type_repository, region_repository)
 
     app.state.account_service = account_service
     app.state.auth_service = auth_service
+    app.state.region_service = region_service
+    app.state.region_type_service = region_type_service
 
 
 @asynccontextmanager
