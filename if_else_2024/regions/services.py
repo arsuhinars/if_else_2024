@@ -24,7 +24,7 @@ class RegionTypeService:
         self._region_repository = region_repository
 
     async def create(self, session: AsyncSession, dto: CreateRegionTypeDto):
-        if await self._repository.exists_by_type(dto.type):
+        if await self._repository.exists_by_type(session, dto.type):
             raise EntityAlreadyExistsException(
                 "RegionType with given type already exists"
             )
@@ -45,6 +45,13 @@ class RegionTypeService:
         region_type = await self._repository.get_by_id(session, id)
         if region_type is None:
             raise EntityNotFoundException("RegionType with given id was not found")
+
+        if dto.type != region_type.type and await self._repository.exists_by_type(
+            session, dto.type
+        ):
+            raise EntityAlreadyExistsException(
+                "RegionType with given type already exists"
+            )
 
         region_type.type = dto.type
 
@@ -87,7 +94,7 @@ class RegionService:
         if await self._repository.exists_by_name(session, dto.name):
             raise EntityAlreadyExistsException("Region with given name already exists")
 
-        region_type = self._region_type_repository.get_by_id(
+        region_type = await self._region_type_repository.get_by_id(
             session, dto.region_type_id
         )
         if region_type is None:
@@ -95,7 +102,7 @@ class RegionService:
 
         parent_region = None
         if dto.parent_region_name is not None:
-            parent_region = self._repository.get_by_name(
+            parent_region = await self._repository.get_by_name(
                 session, dto.parent_region_name
             )
             if parent_region is None:
@@ -103,7 +110,7 @@ class RegionService:
                     "Parent Region with given name was not found"
                 )
 
-        account = self._account_repository.get_by_id(session, account_id)
+        account = await self._account_repository.get_by_id(session, account_id)
         if account is None:
             raise EntityNotFoundException("Account with given id was not found")
 
@@ -120,6 +127,7 @@ class RegionService:
         region = await self._repository.get_by_id(session, id)
         if region is None:
             raise EntityNotFoundException("Region with given id was not found")
+        await region.awaitable_attrs.parent_region
         return region
 
     async def update_by_id(
@@ -134,6 +142,17 @@ class RegionService:
         ):
             raise EntityAlreadyExistsException("Region with given name already exists")
 
+        if (
+            dto.latitude != region.latitude
+            and dto.longitude != region.longitude
+            and await self._repository.exists_by_location(
+                session, dto.latitude, dto.longitude
+            )
+        ):
+            raise EntityAlreadyExistsException(
+                "Region with latitude and longitude name already exists"
+            )
+
         parent_region = await region.awaitable_attrs.parent_region
         parent_region_name = None if parent_region is None else parent_region.name
         if dto.parent_region_name != parent_region_name:
@@ -147,6 +166,8 @@ class RegionService:
                     raise EntityNotFoundException(
                         "Parent Region with given name was not found"
                     )
+                if parent_region.id == id:
+                    raise IntegrityBreachException("Region can not be parent of itself")
                 region.parent_region = parent_region
 
         if dto.region_type_id != region.region_type_id:
@@ -177,4 +198,4 @@ class RegionService:
         if await self._repository.exists_by_parent_id(session, id):
             raise IntegrityBreachException("Region is parent of some regions")
 
-        return self._repository.delete(session, region)
+        await self._repository.delete(session, region)

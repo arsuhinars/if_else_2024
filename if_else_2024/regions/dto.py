@@ -31,12 +31,12 @@ class RegionDto(BaseModel):
     account_id: Annotated[int, Field(serialization_alias="accountId")]
     name: str
     parent_region_name: Annotated[
-        str,
+        str | None,
         Field(
             serialization_alias="parentRegion",
             validation_alias=AliasPath("parent_region", "name"),
         ),
-    ]
+    ] = None
     latitude: float
     longitude: float
 

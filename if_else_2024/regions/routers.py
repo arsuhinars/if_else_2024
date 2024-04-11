@@ -18,7 +18,7 @@ from if_else_2024.regions.dto import (
     UpdateRegionTypeDto,
 )
 
-regions_router = APIRouter(prefix="/", tags=["Регионы"])
+regions_router = APIRouter(prefix="/region", tags=["Регионы"])
 
 
 @regions_router.get(
@@ -38,6 +38,7 @@ async def get_region_by_id(
 
 
 @regions_router.post(
+    "",
     summary="Создать новый регион",
     description=(
         "В качестве аккаунта, заполнившего регион, будет выбран текущий, "
@@ -56,7 +57,7 @@ async def get_region_by_id(
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Запрос от неавторизованного аккаунта"
         },
-        status.HTTP_404_CONFLICT: {
+        status.HTTP_404_NOT_FOUND: {
             "description": (
                 "Типа региона с `id` равным `regionType` не существует\n"
                 "Родительский регион с именем `parentRegion` не существует"
@@ -89,7 +90,7 @@ async def create_region(
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Запрос от неавторизованного аккаунта"
         },
-        status.HTTP_404_CONFLICT: {
+        status.HTTP_404_NOT_FOUND: {
             "description": (
                 "Типа региона с `id` равным `regionType` не существует\n"
                 "Родительский регион с именем `parentRegion` не существует"
@@ -111,7 +112,7 @@ async def update_region_by_id(
     id: Annotated[int, Ge(1), Path()],
 ) -> RegionDto:
     region = await service.update_by_id(session, id, auth.account_id, dto)
-    return await RegionDto.model_validate(region)
+    return RegionDto.model_validate(region)
 
 
 @regions_router.delete(
@@ -133,10 +134,10 @@ async def delete_region_by_id(
     await service.delete_by_id(session, id)
 
 
-regions_types_router = APIRouter(prefix="/types", tags=["Типы регионов"])
+regions_types_router = APIRouter(prefix="/region/types", tags=["Типы регионов"])
 
 
-@regions_router.get(
+@regions_types_router.get(
     "/{id}",
     summary="Получить тип региона по id",
     responses={
@@ -152,7 +153,8 @@ async def get_region_type_by_id(
     return RegionTypeDto.model_validate(region_type)
 
 
-@regions_router.post(
+@regions_types_router.post(
+    "",
     summary="Создать новый тип региона",
     dependencies=[Depends(is_authenticated)],
     responses={
@@ -171,7 +173,7 @@ async def create_region_type(
     return RegionTypeDto.model_validate(region_type)
 
 
-@regions_router.put(
+@regions_types_router.put(
     "/{id}",
     summary="Обновить тип региона по id",
     dependencies=[Depends(is_authenticated)],
@@ -197,7 +199,7 @@ async def update_region_type_by_id(
     return RegionTypeDto.model_validate(region_type)
 
 
-@regions_router.delete(
+@regions_types_router.delete(
     "/{id}",
     summary="Удалить тип региона по id",
     description=(
@@ -209,7 +211,7 @@ async def update_region_type_by_id(
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Запрос от неавторизованного аккаунта"
         },
-        status.HTTP_400_CONFLICT: {
+        status.HTTP_400_BAD_REQUEST: {
             "description": "Существуют регионы, которые используют данный"
         },
         status.HTTP_404_NOT_FOUND: {
@@ -225,6 +227,6 @@ async def delete_region_type_by_id(
     await service.delete_by_id(session, id)
 
 
-router = APIRouter(prefix="/region")
+router = APIRouter()
 router.include_router(regions_router)
 router.include_router(regions_types_router)

@@ -26,6 +26,7 @@ from if_else_2024.core.exceptions import (
 from if_else_2024.core.settings import AppSettings
 from if_else_2024.core.utils import FakeAccountsCreator
 from if_else_2024.regions.repositories import RegionRepository, RegionTypeRepository
+from if_else_2024.regions.routers import router as regions_router
 from if_else_2024.regions.services import RegionService, RegionTypeService
 
 
@@ -63,6 +64,7 @@ def create_app() -> FastAPI:
     """ Setup routers """
     app.include_router(auth_router)
     app.include_router(accounts_router)
+    app.include_router(regions_router)
 
     """ Setup exception handlers """
     app.add_exception_handler(AppException, handle_app_exception)
@@ -100,11 +102,12 @@ async def _app_lifespan(app: FastAPI):
     db: DatabaseManager = app.state.database_manager
     fake_accounts_creator = FakeAccountsCreator(settings.fake_accounts_count)
 
+    await db.initialize()
+
     if settings.create_fake_accounts:
         async with db.create_session() as session:
             await fake_accounts_creator.create(session)
 
-    await db.initialize()
     yield
     await db.dispose()
 

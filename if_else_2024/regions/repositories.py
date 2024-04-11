@@ -57,7 +57,9 @@ class RegionRepository:
         self, session: AsyncSession, latitude: float, longitude: float
     ):
         q = select(
-            exists().where(Region.latitude == latitude & Region.longitude == longitude)
+            exists().where(
+                (Region.latitude == latitude) & (Region.longitude == longitude)
+            )
         )
         s = await session.execute(q)
         return s.scalar_one()
