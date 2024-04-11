@@ -16,6 +16,7 @@ class Base(AsyncAttrs, DeclarativeBase):
 from if_else_2024.accounts.models import Account
 from if_else_2024.auth.models import AuthSession
 from if_else_2024.regions.models import RegionType, Region
+from if_else_2024.forecasts.models import Forecast
 
 
 class DatabaseManager:

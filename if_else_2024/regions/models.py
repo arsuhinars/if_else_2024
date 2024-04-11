@@ -33,6 +33,9 @@ class Region(Base):
     region_type: Mapped[RegionType] = relationship(back_populates="regions")
     account: Mapped["Account"] = relationship(back_populates="regions")
     parent_region: Mapped[Optional["Region"]] = relationship()
+    forecasts: Mapped[list["Forecast"]] = relationship(
+        back_populates="region", cascade="save-update, merge, delete"
+    )
 
     # TODO: add indexes
     __table_args__ = (

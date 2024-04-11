@@ -25,6 +25,9 @@ from if_else_2024.core.exceptions import (
 )
 from if_else_2024.core.settings import AppSettings
 from if_else_2024.core.utils import FakeAccountsCreator
+from if_else_2024.forecasts.repositories import ForecastRepository
+from if_else_2024.forecasts.routers import router as forecast_router
+from if_else_2024.forecasts.services import ForecastService
 from if_else_2024.regions.repositories import RegionRepository, RegionTypeRepository
 from if_else_2024.regions.routers import router as regions_router
 from if_else_2024.regions.services import RegionService, RegionTypeService
@@ -65,6 +68,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(accounts_router)
     app.include_router(regions_router)
+    app.include_router(forecast_router)
 
     """ Setup exception handlers """
     app.add_exception_handler(AppException, handle_app_exception)
@@ -80,6 +84,7 @@ def _setup_app_dependencies(app: FastAPI):
     auth_repository = AuthRepository()
     region_repository = RegionRepository()
     region_type_repository = RegionTypeRepository()
+    forecast_repository = ForecastRepository()
 
     account_service = AccountService(account_repository, region_repository)
     auth_service = AuthService(
@@ -89,11 +94,13 @@ def _setup_app_dependencies(app: FastAPI):
         region_repository, region_type_repository, account_service
     )
     region_type_service = RegionTypeService(region_type_repository, region_repository)
+    forecast_service = ForecastService(forecast_repository, region_repository)
 
     app.state.account_service = account_service
     app.state.auth_service = auth_service
     app.state.region_service = region_service
     app.state.region_type_service = region_type_service
+    app.state.forecast_service = forecast_service
 
 
 @asynccontextmanager
