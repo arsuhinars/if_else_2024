@@ -9,7 +9,7 @@ services:
     environment:
       SERVER_URL: http://localhost:$SERVER_PORT
       CORS_ALLOWED_ORIGINS: '["http://localhost:$SERVER_PORT"]'
-      CREATE_FAKE_ACCOUNTS: $CREATE_FAKE_ACCOUNTS
+      CREATE_FAKE_DATA: $CREATE_FAKE_DATA
     secrets:
       - db_url
     depends_on:

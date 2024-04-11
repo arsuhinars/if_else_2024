@@ -9,5 +9,5 @@ class AppSettings(BaseSettings):
     cors_allowed_origins: list[str]
     auth_session_lifetime: int = 3600
 
-    create_fake_accounts: bool = False
+    create_fake_data: bool = False
     fake_accounts_count: int = 100

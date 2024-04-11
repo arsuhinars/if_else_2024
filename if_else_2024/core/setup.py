@@ -111,13 +111,13 @@ async def _app_lifespan(app: FastAPI):
 
     await db.initialize()
 
-    if settings.create_fake_accounts:
+    if settings.create_fake_data:
         async with db.create_session() as session:
             await fake_accounts_creator.create(session)
 
     yield
     await db.dispose()
 
-    if settings.create_fake_accounts:
+    if settings.create_fake_data:
         async with db.create_session() as session:
             await fake_accounts_creator.release(session)
