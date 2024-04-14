@@ -5,6 +5,7 @@ from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from if_else_2024.core.db_manager import Base
+from if_else_2024.weather.models import Weather
 
 
 class RegionType(Base):
@@ -29,12 +30,21 @@ class Region(Base):
     parent_region_id: Mapped[int | None] = mapped_column(ForeignKey("regions.id"))
     latitude: Mapped[float]
     longitude: Mapped[float]
+    current_weather_id: Mapped[int | None] = mapped_column(ForeignKey("weather.id"))
 
     region_type: Mapped[RegionType] = relationship(back_populates="regions")
     account: Mapped["Account"] = relationship(back_populates="regions")
     parent_region: Mapped[Optional["Region"]] = relationship()
     forecasts: Mapped[list["Forecast"]] = relationship(
         back_populates="region", cascade="save-update, merge, delete"
+    )
+    current_weather: Mapped[Optional[Weather]] = relationship(
+        foreign_keys=[current_weather_id]
+    )
+    weather: Mapped[list[Weather]] = relationship(
+        back_populates="region",
+        cascade="save-update, merge, delete",
+        foreign_keys=[Weather.region_id],
     )
 
     # TODO: add indexes

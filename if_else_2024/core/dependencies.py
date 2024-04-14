@@ -9,6 +9,7 @@ from if_else_2024.core.db_manager import DatabaseManager
 from if_else_2024.core.settings import AppSettings
 from if_else_2024.forecasts.services import ForecastService
 from if_else_2024.regions.services import RegionService, RegionTypeService
+from if_else_2024.weather.services import WeatherService
 
 
 def get_settings(request: Request) -> AppSettings:
@@ -39,6 +40,10 @@ def get_forecast_service(request: Request) -> ForecastService:
     return request.app.state.forecast_service
 
 
+def get_weather_service(request: Request) -> WeatherService:
+    return request.app.state.weather_service
+
+
 async def get_db_session(db: Annotated[DatabaseManager, Depends(get_database_manager)]):
     async with db.create_session() as session:
         yield session
@@ -51,4 +56,5 @@ AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 RegionServiceDep = Annotated[RegionService, Depends(get_region_service)]
 RegionTypeServiceDep = Annotated[RegionTypeService, Depends(get_region_type_service)]
 ForecastServiceDep = Annotated[ForecastService, Depends(get_forecast_service)]
+WeatherServiceDep = Annotated[WeatherService, Depends(get_weather_service)]
 DbSessionDep = Annotated[AsyncSession, Depends(get_db_session)]

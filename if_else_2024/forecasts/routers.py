@@ -4,11 +4,10 @@ from annotated_types import Ge
 from fastapi import APIRouter, Depends, Path, status
 
 from if_else_2024.auth.dependencies import is_authenticated
-from if_else_2024.core.dependencies import DbSessionDep
+from if_else_2024.core.dependencies import DbSessionDep, ForecastServiceDep
 from if_else_2024.forecasts.dto import CreateForecastDto, ForecastDto, UpdateForecastDto
-from if_else_2024.forecasts.services import ForecastService
 
-router = APIRouter(prefix="/region/weather/forecast")
+router = APIRouter(prefix="/region/weather/forecast", tags=["Прогнозы погоды"])
 
 
 @router.get(
@@ -21,7 +20,9 @@ router = APIRouter(prefix="/region/weather/forecast")
     },
 )
 async def get_forecast_by_id(
-    session: DbSessionDep, service: ForecastService, id: Annotated[int, Ge(1), Path()]
+    session: DbSessionDep,
+    service: ForecastServiceDep,
+    id: Annotated[int, Ge(1), Path()],
 ) -> ForecastDto:
     forecast = await service.get_by_id(session, id)
     return ForecastDto.model_validate(forecast)
@@ -30,9 +31,6 @@ async def get_forecast_by_id(
 @router.post(
     "",
     summary="Создать новый прогноз погоды",
-    dependencies=[
-        Depends(is_authenticated),
-    ],
     responses={
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Запрос от неавторизованного аккаунта"
@@ -43,7 +41,7 @@ async def get_forecast_by_id(
     },
 )
 async def create_forecast(
-    session: DbSessionDep, service: ForecastService, dto: CreateForecastDto
+    session: DbSessionDep, service: ForecastServiceDep, dto: CreateForecastDto
 ) -> ForecastDto:
     forecast = await service.create(session, dto)
     return ForecastDto.model_validate(forecast)
@@ -52,7 +50,6 @@ async def create_forecast(
 @router.put(
     "/{id}",
     summary="Обновить прогноз погоды по id",
-    dependencies=[Depends(is_authenticated)],
     responses={
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Запрос от неавторизованного аккаунта"
@@ -64,7 +61,7 @@ async def create_forecast(
 )
 async def update_forecast_by_id(
     session: DbSessionDep,
-    service: ForecastService,
+    service: ForecastServiceDep,
     id: Annotated[int, Ge(1), Path()],
     dto: UpdateForecastDto,
 ) -> ForecastDto:
@@ -86,6 +83,8 @@ async def update_forecast_by_id(
     },
 )
 async def delete_forecast_by_id(
-    session: DbSessionDep, service: ForecastService, id: Annotated[int, Ge(1), Path()]
+    session: DbSessionDep,
+    service: ForecastServiceDep,
+    id: Annotated[int, Ge(1), Path()],
 ):
     await service.delete_by_id(session, id)

@@ -1,20 +1,11 @@
 # flake8: noqa: F821
 from datetime import datetime
-from enum import StrEnum
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from if_else_2024.core.db_manager import Base
-
-
-class WeatherCondition(StrEnum):
-    CLEAR = "CLEAR"
-    CLOUDY = "CLOUDY"
-    RAIN = "RAIN"
-    SNOW = "SNOW"
-    FOG = "FOG"
-    STORM = "STORM"
+from if_else_2024.weather.models import WeatherCondition, weather_forecast_table
 
 
 class Forecast(Base):
@@ -27,3 +18,8 @@ class Forecast(Base):
     region_id: Mapped[int] = mapped_column(ForeignKey("regions.id"))
 
     region: Mapped["Region"] = relationship(back_populates="forecasts")
+    weather: Mapped[list["Weather"]] = relationship(
+        back_populates="forecasts",
+        secondary=weather_forecast_table,
+        cascade="save-update, merge, delete",
+    )

@@ -11,3 +11,4 @@ class AppSettings(BaseSettings):
 
     create_fake_data: bool = False
     fake_accounts_count: int = 100
+    # fake_regions_count: int = 100

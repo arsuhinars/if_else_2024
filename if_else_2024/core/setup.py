@@ -24,13 +24,16 @@ from if_else_2024.core.exceptions import (
     handle_validation_exception,
 )
 from if_else_2024.core.settings import AppSettings
-from if_else_2024.core.utils import FakeAccountsCreator
+from if_else_2024.core.utils import FakeDataCreator
 from if_else_2024.forecasts.repositories import ForecastRepository
 from if_else_2024.forecasts.routers import router as forecast_router
 from if_else_2024.forecasts.services import ForecastService
 from if_else_2024.regions.repositories import RegionRepository, RegionTypeRepository
 from if_else_2024.regions.routers import router as regions_router
 from if_else_2024.regions.services import RegionService, RegionTypeService
+from if_else_2024.weather.repositories import WeatherRepository
+from if_else_2024.weather.routers import router as weather_router
+from if_else_2024.weather.services import WeatherService
 
 
 def create_app() -> FastAPI:
@@ -69,6 +72,7 @@ def create_app() -> FastAPI:
     app.include_router(accounts_router)
     app.include_router(regions_router)
     app.include_router(forecast_router)
+    app.include_router(weather_router)
 
     """ Setup exception handlers """
     app.add_exception_handler(AppException, handle_app_exception)
@@ -85,6 +89,7 @@ def _setup_app_dependencies(app: FastAPI):
     region_repository = RegionRepository()
     region_type_repository = RegionTypeRepository()
     forecast_repository = ForecastRepository()
+    weather_repository = WeatherRepository()
 
     account_service = AccountService(account_repository, region_repository)
     auth_service = AuthService(
@@ -95,29 +100,33 @@ def _setup_app_dependencies(app: FastAPI):
     )
     region_type_service = RegionTypeService(region_type_repository, region_repository)
     forecast_service = ForecastService(forecast_repository, region_repository)
+    weather_service = WeatherService(
+        weather_repository, forecast_repository, region_repository
+    )
 
     app.state.account_service = account_service
     app.state.auth_service = auth_service
     app.state.region_service = region_service
     app.state.region_type_service = region_type_service
     app.state.forecast_service = forecast_service
+    app.state.weather_service = weather_service
 
 
 @asynccontextmanager
 async def _app_lifespan(app: FastAPI):
     settings: AppSettings = app.state.settings
     db: DatabaseManager = app.state.database_manager
-    fake_accounts_creator = FakeAccountsCreator(settings.fake_accounts_count)
+    fake_data_creator = FakeDataCreator(settings.fake_accounts_count)
 
     await db.initialize()
 
     if settings.create_fake_data:
         async with db.create_session() as session:
-            await fake_accounts_creator.create(session)
+            await fake_data_creator.create(session)
 
     yield
     await db.dispose()
 
     if settings.create_fake_data:
         async with db.create_session() as session:
-            await fake_accounts_creator.release(session)
+            await fake_data_creator.release(session)

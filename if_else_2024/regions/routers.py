@@ -115,6 +115,7 @@ async def update_region_by_id(
     return RegionDto.model_validate(region)
 
 
+# TODO: add comment about cascades
 @regions_router.delete(
     "/{id}",
     summary="Удалить регион по id",

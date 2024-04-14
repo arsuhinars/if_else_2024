@@ -17,6 +17,7 @@ from if_else_2024.accounts.models import Account
 from if_else_2024.auth.models import AuthSession
 from if_else_2024.regions.models import RegionType, Region
 from if_else_2024.forecasts.models import Forecast
+from if_else_2024.weather.models import Weather
 
 
 class DatabaseManager:
