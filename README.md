@@ -25,7 +25,7 @@
 1. Убедитесь, что у вас в системе установлен [Docker](https://www.docker.com/)
 2. Склонируйте данный репозиторий:
 ```shell
-git clone https://gitverse.ru/arsuhinars/IT-Planet_If_else_Fedorov
+git clone ssh://git@gitverse.ru:2222/arsuhinars/IT-Planet_If_else_Fedorov.git
 ```
 3. Перейдите в директорию репозитория и запустите сервер:
 ```shell
