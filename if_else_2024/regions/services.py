@@ -137,6 +137,15 @@ class RegionService:
         if region is None:
             raise EntityNotFoundException("Region with given id was not found")
 
+        if (
+            dto.latitude != region.latitude or dto.longitude != region.longitude
+        ) and await self._repository.exists_by_location(
+            session, dto.latitude, dto.longitude
+        ):
+            raise EntityAlreadyExistsException(
+                "Region with given latitude and longitude already exists"
+            )
+
         if dto.name != region.name and await self._repository.exists_by_name(
             session, dto.name
         ):
