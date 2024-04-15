@@ -1,0 +1,2186 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "История погоды",
+        "version": "0.1.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080",
+            "description": "Локальный сервер"
+        }
+    ],
+    "paths": {
+        "/registration": {
+            "post": {
+                "tags": [
+                    "Аутентификация"
+                ],
+                "summary": "Регистрация нового аккаунта",
+                "description": "После успешной регистрации в cookie параметр `id` будет записан идентификатор текущей сессии. Для повторного входа в аккаунт воспользуйтесь методом `/login`",
+                "operationId": "register_registration_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterAccountDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "409": {
+                        "description": "Аккаунт с указанным email уже существует"
+                    },
+                    "403": {
+                        "description": "Запрос от авторизованного аккаунта"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ]
+            }
+        },
+        "/login": {
+            "post": {
+                "tags": [
+                    "Аутентификация"
+                ],
+                "summary": "Вход в существующий аккаунт",
+                "description": "После успешного входа в cookie параметр `id` будет записан идентификатор текущей сессии. Сессия активна только некоторое время, после которого необходимо входить в аккаунт заново.",
+                "operationId": "login_login_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "401": {
+                        "description": "Указанные email или пароль неверные"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/accounts/search": {
+            "get": {
+                "tags": [
+                    "Аккаунты"
+                ],
+                "summary": "Запрос для поиска аккаунтов",
+                "description": "Параметры `firstName`, `lastName`, `email` используются для фильтрации по соответствующим полям. Проверка идет без учета регистра и может использоваться для проверки только части строки от заданного параметра.\n\nПараметры `from` и `size` позволяют реализовать пагинацию. Первый параметр отвечает за количество пропущенных элементов от начала. Второй - за количество элементов на странице",
+                "operationId": "search_accounts_accounts_search_get",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "firstName",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Firstname"
+                        }
+                    },
+                    {
+                        "name": "lastName",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Lastname"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Email"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 0,
+                            "title": "From"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 10,
+                            "title": "Size"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AccountDto"
+                                    },
+                                    "title": "Response Search Accounts Accounts Search Get"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/accounts/{id}": {
+            "get": {
+                "tags": [
+                    "Аккаунты"
+                ],
+                "summary": "Получить данные аккаунта по id",
+                "operationId": "get_account_by_id_accounts__id__get",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "404": {
+                        "description": "Аккаунта с указанным id не существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Аккаунты"
+                ],
+                "summary": "Обновить аккаунт по id",
+                "operationId": "update_account_by_id_accounts__id__put",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateAccountDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "403": {
+                        "description": "Обновление чужого аккаунта или аккаунт не существует"
+                    },
+                    "409": {
+                        "description": "Аккаунт с таким email уже существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Аккаунты"
+                ],
+                "summary": "Удалить аккаунт по id",
+                "description": "_Отличия от задания:_\nДобавил ошибку с кодом 400 для того, чтобы избежать нарушения целостности в БД (поле accountId у региона)",
+                "operationId": "delete_account_by_id_accounts__id__delete",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Аккаунт является создателем какого-либо региона"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "403": {
+                        "description": "Обновление чужого аккаунта или аккаунт не существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/region/{id}": {
+            "get": {
+                "tags": [
+                    "Регионы"
+                ],
+                "summary": "Получить данные региона по id",
+                "operationId": "get_region_by_id_region__id__get",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RegionDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "404": {
+                        "description": "Региона с указанным id не существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Регионы"
+                ],
+                "summary": "Обновить регион по id",
+                "description": "_Отличия от задания:_\n\nсм. описание метода `POST /region`\n\nТакже добавлен ошибка с кодом 400, если осуществляется попытка сделать регион своим родителем.",
+                "operationId": "update_region_by_id_region__id__put",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateRegionDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RegionDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "404": {
+                        "description": "Регион с указанным id не существует\nТипа региона с `id` равным `regionType` не существует\nРодительский регион с именем `parentRegion` не существует"
+                    },
+                    "409": {
+                        "description": "Регион с указанными `latitude` и `longitude` уже существует\nРегион с указанным именем уже существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Регионы"
+                ],
+                "summary": "Удалить регион по id",
+                "operationId": "delete_region_by_id_region__id__delete",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Регион является родителем другого региона"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "404": {
+                        "description": "Регион с указанным id не существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/region": {
+            "post": {
+                "tags": [
+                    "Регионы"
+                ],
+                "summary": "Создать новый регион",
+                "description": "В качестве аккаунта, заполнившего регион, будет выбран текущий, с которого был выполнен метод\n\n_Отличия от задания:_\nДобавлены коды ошибок при несуществовании указанного типа региона или родителя.\n\nТакже имя региона должно быть уникальным для того, чтобы можно было однозначно определить родительский регион по имени.\n\nДобавлены доп. проверки на валидность данных (400 код ошибки):\n- regionType >= 1\n- parentRegion не пустая строка",
+                "operationId": "create_region_region_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateRegionDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RegionDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "404": {
+                        "description": "Типа региона с `id` равным `regionType` не существует\nРодительский регион с именем `parentRegion` не существует"
+                    },
+                    "409": {
+                        "description": "Регион с указанными `latitude` и `longitude` уже существует\nРегион с указанным именем уже существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ]
+            }
+        },
+        "/region/types/{id}": {
+            "get": {
+                "tags": [
+                    "Типы регионов"
+                ],
+                "summary": "Получить тип региона по id",
+                "operationId": "get_region_type_by_id_region_types__id__get",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RegionTypeDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "404": {
+                        "description": "Типа региона с указанным id не существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Типы регионов"
+                ],
+                "summary": "Обновить тип региона по id",
+                "operationId": "update_region_type_by_id_region_types__id__put",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateRegionTypeDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RegionTypeDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "404": {
+                        "description": "Типа региона с указанным id не существует"
+                    },
+                    "409": {
+                        "description": "Тип региона с указанным type уже существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Типы регионов"
+                ],
+                "summary": "Удалить тип региона по id",
+                "description": "_Отличия от задания:_\nДобавлен код ошибки 400, если данный тип используется регионами",
+                "operationId": "delete_region_type_by_id_region_types__id__delete",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Существуют регионы, которые используют данный"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "404": {
+                        "description": "Типа региона с указанным id не существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/region/types": {
+            "post": {
+                "tags": [
+                    "Типы регионов"
+                ],
+                "summary": "Создать новый тип региона",
+                "operationId": "create_region_type_region_types_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateRegionTypeDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RegionTypeDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "409": {
+                        "description": "Тип региона с указанным type уже существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ]
+            }
+        },
+        "/region/weather/forecast/{id}": {
+            "get": {
+                "tags": [
+                    "Прогнозы погоды"
+                ],
+                "summary": "Получить прогноз погоды по id",
+                "operationId": "get_forecast_by_id_region_weather_forecast__id__get",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ForecastDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "404": {
+                        "description": "Прогноза погоды с указанным id не существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Прогнозы погоды"
+                ],
+                "summary": "Обновить прогноз погоды по id",
+                "operationId": "update_forecast_by_id_region_weather_forecast__id__put",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateForecastDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ForecastDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "404": {
+                        "description": "Прогноза погоды с указанным id не существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Прогнозы погоды"
+                ],
+                "summary": "Удалить прогноз погоды по id",
+                "operationId": "delete_forecast_by_id_region_weather_forecast__id__delete",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "404": {
+                        "description": "Прогноза погоды с указанным id не существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/region/weather/forecast": {
+            "post": {
+                "tags": [
+                    "Прогнозы погоды"
+                ],
+                "summary": "Создать новый прогноз погоды",
+                "operationId": "create_forecast_region_weather_forecast_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateForecastDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ForecastDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "401": {
+                        "description": "Запрос от неавторизованного аккаунта"
+                    },
+                    "404": {
+                        "description": "Региона с указанным regionId не существует"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ]
+            }
+        },
+        "/region/weather/search": {
+            "get": {
+                "tags": [
+                    "Погода"
+                ],
+                "summary": "Запрос для поиска погоды",
+                "description": "Параметры `startDateTime` и `endDateTime` задают период начала и концасоответственно для поиска записей о погоде.\n\nПараметры `regionId` и `weatherCondition` используются для фильтрации по соответствующим полям.\n\nПараметры `from` и `size` позволяют реализовать пагинацию. Первый параметр отвечает за количество пропущенных элементов от начала. Второй - за количество элементов на странице",
+                "operationId": "search_weather_region_weather_search_get",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "startDateTime",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "date-time"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Startdatetime"
+                        }
+                    },
+                    {
+                        "name": "endDateTime",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "date-time"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Enddatetime"
+                        }
+                    },
+                    {
+                        "name": "regionId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Regionid"
+                        }
+                    },
+                    {
+                        "name": "weatherCondition",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/components/schemas/WeatherCondition"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Weathercondition"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 0,
+                            "title": "From"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "title": "Size"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WeatherDto"
+                                    },
+                                    "title": "Response Search Weather Region Weather Search Get"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/region/weather": {
+            "post": {
+                "tags": [
+                    "Погода"
+                ],
+                "summary": "Создать новую погоду и сделать её текущей для региона по region_id",
+                "operationId": "create_weather_for_region_region_weather_post",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "region_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Region Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateWeatherDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WeatherDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/region/weather/{region_id}": {
+            "get": {
+                "tags": [
+                    "Погода"
+                ],
+                "summary": "Получить данные текущей погоды в регионе по region_id",
+                "operationId": "get_weather_by_region_id_region_weather__region_id__get",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "region_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Region Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WeatherDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Погода"
+                ],
+                "summary": "Обновить текущую погоду для региона по region_id",
+                "operationId": "update_weather_for_region_region_weather__region_id__put",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "region_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Region Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateWeatherDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WeatherDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Погода"
+                ],
+                "summary": "Удалить текущую погоду в регионе по region_id",
+                "operationId": "delete_weather_for_region_region_weather__region_id__delete",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "region_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Region Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/region/{region_id}/weather/{weather_id}": {
+            "post": {
+                "tags": [
+                    "Погода"
+                ],
+                "summary": "Заменить текущую погоду в регионе с region_id на погоду с weather_id",
+                "operationId": "set_current_weather_for_region_region__region_id__weather__weather_id__post",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "region_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Region Id"
+                        }
+                    },
+                    {
+                        "name": "weather_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Weather Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Погода"
+                ],
+                "summary": "Удалить погоду в регионе с region_id по weather_id",
+                "operationId": "delete_weather_region__region_id__weather__weather_id__delete",
+                "security": [
+                    {
+                        "Session id": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "region_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Region Id"
+                        }
+                    },
+                    {
+                        "name": "weather_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Weather Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат входных данных"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AccountDto": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "firstName": {
+                        "type": "string",
+                        "title": "Firstname"
+                    },
+                    "lastName": {
+                        "type": "string",
+                        "title": "Lastname"
+                    },
+                    "email": {
+                        "type": "string",
+                        "title": "Email"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "email"
+                ],
+                "title": "AccountDto"
+            },
+            "CreateForecastDto": {
+                "properties": {
+                    "regionId": {
+                        "type": "integer",
+                        "minimum": 1.0,
+                        "title": "Regionid"
+                    },
+                    "dateTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Datetime"
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "title": "Temperature"
+                    },
+                    "weatherCondition": {
+                        "$ref": "#/components/schemas/WeatherCondition"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "regionId",
+                    "dateTime",
+                    "temperature",
+                    "weatherCondition"
+                ],
+                "title": "CreateForecastDto"
+            },
+            "CreateRegionDto": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Name"
+                    },
+                    "parentRegion": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Parentregion"
+                    },
+                    "regionType": {
+                        "type": "integer",
+                        "minimum": 1.0,
+                        "title": "Regiontype"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "title": "Latitude"
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "title": "Longitude"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name",
+                    "parentRegion",
+                    "regionType",
+                    "latitude",
+                    "longitude"
+                ],
+                "title": "CreateRegionDto"
+            },
+            "CreateRegionTypeDto": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "type"
+                ],
+                "title": "CreateRegionTypeDto"
+            },
+            "CreateWeatherDto": {
+                "properties": {
+                    "regionId": {
+                        "type": "integer",
+                        "minimum": 1.0,
+                        "title": "Regionid"
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "title": "Temperature"
+                    },
+                    "humidity": {
+                        "type": "number",
+                        "title": "Humidity"
+                    },
+                    "windSpeed": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "title": "Windspeed"
+                    },
+                    "weatherCondition": {
+                        "$ref": "#/components/schemas/WeatherCondition"
+                    },
+                    "precipitationAmount": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "title": "Precipitationamount"
+                    },
+                    "measurementDateTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Measurementdatetime"
+                    },
+                    "weatherForecast": {
+                        "items": {
+                            "type": "integer"
+                        },
+                        "type": "array",
+                        "title": "Weatherforecast"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "regionId",
+                    "temperature",
+                    "humidity",
+                    "windSpeed",
+                    "weatherCondition",
+                    "precipitationAmount",
+                    "measurementDateTime",
+                    "weatherForecast"
+                ],
+                "title": "CreateWeatherDto"
+            },
+            "ForecastDto": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "dateTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Datetime"
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "title": "Temperature"
+                    },
+                    "weatherCondition": {
+                        "$ref": "#/components/schemas/WeatherCondition"
+                    },
+                    "regionId": {
+                        "type": "integer",
+                        "title": "Regionid"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "dateTime",
+                    "temperature",
+                    "weatherCondition",
+                    "regionId"
+                ],
+                "title": "ForecastDto"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "LoginDto": {
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Password"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "title": "LoginDto"
+            },
+            "LoginResponseDto": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id"
+                ],
+                "title": "LoginResponseDto"
+            },
+            "RegionDto": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "regionType": {
+                        "type": "integer",
+                        "title": "Regiontype"
+                    },
+                    "accountId": {
+                        "type": "integer",
+                        "title": "Accountid"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "parentRegion": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Parentregion"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "title": "Latitude"
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "title": "Longitude"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "regionType",
+                    "accountId",
+                    "name",
+                    "latitude",
+                    "longitude"
+                ],
+                "title": "RegionDto"
+            },
+            "RegionTypeDto": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "type"
+                ],
+                "title": "RegionTypeDto"
+            },
+            "RegisterAccountDto": {
+                "properties": {
+                    "firstName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Firstname"
+                    },
+                    "lastName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Lastname"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Password"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "password"
+                ],
+                "title": "RegisterAccountDto"
+            },
+            "UpdateAccountDto": {
+                "properties": {
+                    "firstName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Firstname"
+                    },
+                    "lastName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Lastname"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Password"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "password"
+                ],
+                "title": "UpdateAccountDto"
+            },
+            "UpdateForecastDto": {
+                "properties": {
+                    "temperature": {
+                        "type": "number",
+                        "title": "Temperature"
+                    },
+                    "weatherCondition": {
+                        "$ref": "#/components/schemas/WeatherCondition"
+                    },
+                    "dateTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Datetime"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "temperature",
+                    "weatherCondition",
+                    "dateTime"
+                ],
+                "title": "UpdateForecastDto"
+            },
+            "UpdateRegionDto": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Name"
+                    },
+                    "parentRegion": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Parentregion"
+                    },
+                    "regionType": {
+                        "type": "integer",
+                        "minimum": 1.0,
+                        "title": "Regiontype"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "title": "Latitude"
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "title": "Longitude"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name",
+                    "parentRegion",
+                    "regionType",
+                    "latitude",
+                    "longitude"
+                ],
+                "title": "UpdateRegionDto"
+            },
+            "UpdateRegionTypeDto": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "type"
+                ],
+                "title": "UpdateRegionTypeDto"
+            },
+            "UpdateWeatherDto": {
+                "properties": {
+                    "region_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Region Name"
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "title": "Temperature"
+                    },
+                    "humidity": {
+                        "type": "number",
+                        "title": "Humidity"
+                    },
+                    "windSpeed": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "title": "Windspeed"
+                    },
+                    "weatherCondition": {
+                        "$ref": "#/components/schemas/WeatherCondition"
+                    },
+                    "precipitationAmount": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "title": "Precipitationamount"
+                    },
+                    "measurementDateTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Measurementdatetime"
+                    },
+                    "weatherForecast": {
+                        "items": {
+                            "type": "integer"
+                        },
+                        "type": "array",
+                        "title": "Weatherforecast"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "region_name",
+                    "temperature",
+                    "humidity",
+                    "windSpeed",
+                    "weatherCondition",
+                    "precipitationAmount",
+                    "measurementDateTime",
+                    "weatherForecast"
+                ],
+                "title": "UpdateWeatherDto"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            },
+            "WeatherCondition": {
+                "type": "string",
+                "enum": [
+                    "CLEAR",
+                    "CLOUDY",
+                    "RAIN",
+                    "SNOW",
+                    "FOG",
+                    "STORM"
+                ],
+                "title": "WeatherCondition"
+            },
+            "WeatherDto": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "regionName": {
+                        "type": "string",
+                        "title": "Regionname"
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "title": "Temperature"
+                    },
+                    "humidity": {
+                        "type": "number",
+                        "title": "Humidity"
+                    },
+                    "windSpeed": {
+                        "type": "number",
+                        "title": "Windspeed"
+                    },
+                    "weatherCondition": {
+                        "$ref": "#/components/schemas/WeatherCondition"
+                    },
+                    "precipitationAmount": {
+                        "type": "number",
+                        "title": "Precipitationamount"
+                    },
+                    "measurementDateTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Measurementdatetime"
+                    },
+                    "weatherForecast": {
+                        "items": {
+                            "type": "integer"
+                        },
+                        "type": "array",
+                        "title": "Weatherforecast"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "regionName",
+                    "temperature",
+                    "humidity",
+                    "windSpeed",
+                    "weatherCondition",
+                    "precipitationAmount",
+                    "measurementDateTime",
+                    "weatherForecast"
+                ],
+                "title": "WeatherDto"
+            }
+        },
+        "securitySchemes": {
+            "Session id": {
+                "type": "apiKey",
+                "description": "Авторизация по id сессии через cookie. id представлен в виде уникального UUID",
+                "in": "cookie",
+                "name": "id"
+            }
+        }
+    }
+}
