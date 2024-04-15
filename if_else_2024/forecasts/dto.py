@@ -11,10 +11,12 @@ class ForecastDto(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    date_time: Annotated[datetime, Field(alias="dateTime")]
+    date_time: Annotated[datetime, Field(serialization_alias="dateTime")]
     temperature: float
-    weather_condition: Annotated[WeatherCondition, Field(alias="weatherCondition")]
-    region_id: Annotated[int, Field(alias="regionId")]
+    weather_condition: Annotated[
+        WeatherCondition, Field(serialization_alias="weatherCondition")
+    ]
+    region_id: Annotated[int, Field(serialization_alias="regionId")]
 
 
 class CreateForecastDto(BaseModel):

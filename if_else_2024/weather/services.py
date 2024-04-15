@@ -96,9 +96,7 @@ class WeatherService:
             raise EntityNotFoundException("There is no current weather in this region")
 
         forecasts = [
-            await self._forecast_repository.get_by_region_and_id(
-                session, dto.region_id, id
-            )
+            await self._forecast_repository.get_by_region_and_id(session, region_id, id)
             for id in dto.weather_forecast
         ]
         if None in forecasts:
@@ -143,7 +141,11 @@ class WeatherService:
         if weather is None:
             raise EntityNotFoundException("There is no current weather in this region")
 
-        await self._weather_repository.delete(session, weather)
+        region.current_weather_id = None
+
+        await session.delete(weather)
+        await session.flush()
+        await session.commit()
 
     async def delete_by_id(self, session: AsyncSession, region_id: int, id: int):
         region = await self._region_repository.get_by_id(session, region_id)
@@ -152,6 +154,13 @@ class WeatherService:
 
         weather = await self._weather_repository.get_by_id(session, id)
         if weather is None or weather.region_id != region_id:
-            raise EntityNotFoundException("There is no current weather in this region")
+            raise EntityNotFoundException(
+                "There is no weather with given id in this region"
+            )
 
-        await self._weather_repository.delete(session, weather)
+        if weather.id == region.current_weather_id:
+            region.current_weather_id = None
+
+        await session.delete(weather)
+        await session.flush()
+        await session.commit()

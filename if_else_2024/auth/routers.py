@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Response, status
 
 from if_else_2024.accounts.dto import AccountDto
-from if_else_2024.auth.dependencies import AuthSessionDep
+from if_else_2024.auth.dependencies import SessionToken, authenticate_user
 from if_else_2024.auth.dto import LoginDto, LoginResponseDto, RegisterAccountDto
 from if_else_2024.core.dependencies import AuthServiceDep, DbSessionDep, SettingsDep
-from if_else_2024.core.exceptions import ForbiddenException
+from if_else_2024.core.exceptions import ForbiddenException, UnauthorizedException
 
 router = APIRouter(prefix="", tags=["Аутентификация"])
 
@@ -31,10 +31,15 @@ async def register(
     dto: RegisterAccountDto,
     session: DbSessionDep,
     service: AuthServiceDep,
-    auth: AuthSessionDep,
     settings: SettingsDep,
     response: Response,
+    raw_id: SessionToken = None,
 ) -> AccountDto:
+    try:
+        auth = await authenticate_user(service, session, raw_id)
+    except UnauthorizedException:
+        auth = None
+
     if auth is not None:
         raise ForbiddenException("You are already authorized")
 

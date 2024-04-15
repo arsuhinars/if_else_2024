@@ -3,7 +3,11 @@ from typing import Annotated
 from annotated_types import Ge
 from fastapi import APIRouter, Depends, Path, status
 
-from if_else_2024.auth.dependencies import AuthSessionDep, is_authenticated
+from if_else_2024.auth.dependencies import (
+    AuthSessionDep,
+    authenticate_user,
+    is_authenticated,
+)
 from if_else_2024.core.dependencies import (
     DbSessionDep,
     RegionServiceDep,
@@ -29,6 +33,7 @@ regions_router = APIRouter(prefix="/region", tags=["Регионы"])
             "description": "Региона с указанным id не существует"
         }
     },
+    dependencies=[Depends(authenticate_user)],
 )
 async def get_region_by_id(
     session: DbSessionDep, service: RegionServiceDep, id: Annotated[int, Ge(1), Path()]
@@ -53,6 +58,7 @@ async def get_region_by_id(
         "- parentRegion не пустая строка"
     ),
     dependencies=[Depends(is_authenticated)],
+    status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Запрос от неавторизованного аккаунта"
@@ -84,7 +90,13 @@ async def create_region(
 @regions_router.put(
     "/{id}",
     summary="Обновить регион по id",
-    description="_Отличия от задания:_\nсм. описание метода `POST /region`",
+    description=(
+        "_Отличия от задания:_\n\n"
+        "см. описание метода `POST /region`"
+        "\n\n"
+        "Также добавлен ошибка с кодом 400, если осуществляется попытка сделать "
+        "регион своим родителем."
+    ),
     dependencies=[Depends(is_authenticated)],
     responses={
         status.HTTP_401_UNAUTHORIZED: {
@@ -92,6 +104,7 @@ async def create_region(
         },
         status.HTTP_404_NOT_FOUND: {
             "description": (
+                "Регион с указанным id не существует\n"
                 "Типа региона с `id` равным `regionType` не существует\n"
                 "Родительский регион с именем `parentRegion` не существует"
             )
@@ -127,6 +140,9 @@ async def update_region_by_id(
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Запрос от неавторизованного аккаунта"
         },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "Регион с указанным id не существует"
+        },
     },
 )
 async def delete_region_by_id(
@@ -146,6 +162,7 @@ regions_types_router = APIRouter(prefix="/region/types", tags=["Типы рег�
             "description": "Типа региона с указанным id не существует"
         }
     },
+    dependencies=[Depends(authenticate_user)],
 )
 async def get_region_type_by_id(
     session: DbSessionDep, service: RegionTypeServiceDep, id: int
@@ -158,6 +175,7 @@ async def get_region_type_by_id(
     "",
     summary="Создать новый тип региона",
     dependencies=[Depends(is_authenticated)],
+    status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Запрос от неавторизованного аккаунта"

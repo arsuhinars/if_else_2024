@@ -2,7 +2,7 @@ import logging
 import sys
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,7 +14,6 @@ from if_else_2024.core.db_manager import DatabaseManager
 from if_else_2024.accounts.repositories import AccountRepository
 from if_else_2024.accounts.routers import router as accounts_router
 from if_else_2024.accounts.services import AccountService
-from if_else_2024.auth.dependencies import authenticate_user
 from if_else_2024.auth.repositories import AuthRepository
 from if_else_2024.auth.routers import router as auth_router
 from if_else_2024.auth.services import AuthService
@@ -47,7 +46,6 @@ def create_app() -> FastAPI:
         servers=[
             {"url": settings.server_url, "description": "Локальный сервер"},
         ],
-        dependencies=[Depends(authenticate_user)],
         responses={
             400: {"description": "Неверный формат входных данных"},
         },
@@ -116,7 +114,13 @@ def _setup_app_dependencies(app: FastAPI):
 async def _app_lifespan(app: FastAPI):
     settings: AppSettings = app.state.settings
     db: DatabaseManager = app.state.database_manager
-    fake_data_creator = FakeDataCreator(settings.fake_accounts_count)
+    fake_data_creator = FakeDataCreator(
+        settings.fake_accounts_count,
+        settings.fake_region_types_count,
+        settings.fake_regions_count,
+        settings.fake_forecasts_count,
+        settings.fake_weather_count,
+    )
 
     await db.initialize()
 

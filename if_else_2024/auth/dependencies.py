@@ -17,12 +17,13 @@ session_id_scheme = APIKeyCookie(
         "уникального UUID"
     ),
 )
+SessionToken = Annotated[str | None, Depends(session_id_scheme)]
 
 
 async def authenticate_user(
     auth_service: AuthServiceDep,
     session: DbSessionDep,
-    raw_id: Annotated[str | None, Depends(session_id_scheme)] = None,
+    raw_id: SessionToken = None,
 ):
     if raw_id is None:
         return None

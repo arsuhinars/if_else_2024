@@ -43,7 +43,7 @@ class WeatherDto(BaseModel):
     ]
     weather_forecast: Annotated[
         list[int],
-        Field(serialization_alias="weatherForecast"),
+        Field(serialization_alias="weatherForecast", validation_alias="forecasts"),
         BeforeValidator(convert_weather_forecast_to_ids),
     ]
 

@@ -3,7 +3,7 @@ from typing import Annotated
 from annotated_types import Ge
 from fastapi import APIRouter, Depends, Path, status
 
-from if_else_2024.auth.dependencies import is_authenticated
+from if_else_2024.auth.dependencies import authenticate_user, is_authenticated
 from if_else_2024.core.dependencies import DbSessionDep, ForecastServiceDep
 from if_else_2024.forecasts.dto import CreateForecastDto, ForecastDto, UpdateForecastDto
 
@@ -18,6 +18,7 @@ router = APIRouter(prefix="/region/weather/forecast", tags=["Прогнозы п
             "description": "Прогноза погоды с указанным id не существует"
         }
     },
+    dependencies=[Depends(authenticate_user)],
 )
 async def get_forecast_by_id(
     session: DbSessionDep,
@@ -39,6 +40,7 @@ async def get_forecast_by_id(
             "description": "Региона с указанным regionId не существует"
         },
     },
+    dependencies=[Depends(authenticate_user)],
 )
 async def create_forecast(
     session: DbSessionDep, service: ForecastServiceDep, dto: CreateForecastDto
@@ -58,6 +60,7 @@ async def create_forecast(
             "description": "Прогноза погоды с указанным id не существует"
         },
     },
+    dependencies=[Depends(authenticate_user)],
 )
 async def update_forecast_by_id(
     session: DbSessionDep,

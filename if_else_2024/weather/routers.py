@@ -1,24 +1,14 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from if_else_2024.auth.dependencies import authenticate_user
 from if_else_2024.core.dependencies import DbSessionDep, WeatherServiceDep
 from if_else_2024.weather.dto import CreateWeatherDto, UpdateWeatherDto, WeatherDto
 from if_else_2024.weather.models import WeatherCondition
 
 router = APIRouter(prefix="/region", tags=["Погода"])
-
-
-@router.get(
-    "/weather/{region_id}",
-    summary="Получить данные текущей погоды в регионе по region_id",
-)
-async def get_weather_by_region_id(
-    session: DbSessionDep, service: WeatherServiceDep, region_id: int
-) -> WeatherDto:
-    weather = await service.get_current_for_region(session, region_id)
-    return WeatherDto.model_validate(weather)
 
 
 @router.get(
@@ -35,12 +25,13 @@ async def get_weather_by_region_id(
         "параметр отвечает за количество пропущенных элементов от начала. "
         "Второй - за количество элементов на странице"
     ),
+    dependencies=[Depends(authenticate_user)],
 )
 async def search_weather(
     session: DbSessionDep,
     service: WeatherServiceDep,
     start_date_time: Annotated[datetime | None, Query(alias="startDateTime")] = None,
-    end_date_time: Annotated[datetime | None, Query(alias="startDateTime")] = None,
+    end_date_time: Annotated[datetime | None, Query(alias="endDateTime")] = None,
     region_id: Annotated[int | None, Query(alias="regionId")] = None,
     weather_condition: Annotated[
         WeatherCondition | None, Query(alias="weatherCondition")
@@ -63,6 +54,7 @@ async def search_weather(
 @router.post(
     "/weather",
     summary="Создать новую погоду и сделать её текущей для региона по region_id",
+    dependencies=[Depends(authenticate_user)],
 )
 async def create_weather_for_region(
     session: DbSessionDep,
@@ -74,9 +66,22 @@ async def create_weather_for_region(
     return WeatherDto.model_validate(weather)
 
 
+@router.get(
+    "/weather/{region_id}",
+    summary="Получить данные текущей погоды в регионе по region_id",
+    dependencies=[Depends(authenticate_user)],
+)
+async def get_weather_by_region_id(
+    session: DbSessionDep, service: WeatherServiceDep, region_id: int
+) -> WeatherDto:
+    weather = await service.get_current_for_region(session, region_id)
+    return WeatherDto.model_validate(weather)
+
+
 @router.put(
     "/weather/{region_id}",
     summary="Обновить текущую погоду для региона по region_id",
+    dependencies=[Depends(authenticate_user)],
 )
 async def update_weather_for_region(
     session: DbSessionDep,
@@ -91,6 +96,7 @@ async def update_weather_for_region(
 @router.delete(
     "/weather/{region_id}",
     summary="Удалить текущую погоду в регионе по region_id",
+    dependencies=[Depends(authenticate_user)],
 )
 async def delete_weather_for_region(
     session: DbSessionDep, service: WeatherServiceDep, region_id: int
@@ -101,6 +107,7 @@ async def delete_weather_for_region(
 @router.post(
     "/{region_id}/weather/{weather_id}",
     summary="Заменить текущую погоду в регионе с region_id на погоду с weather_id",
+    dependencies=[Depends(authenticate_user)],
 )
 async def set_current_weather_for_region(
     session: DbSessionDep, service: WeatherServiceDep, region_id: int, weather_id: int
@@ -111,6 +118,7 @@ async def set_current_weather_for_region(
 @router.delete(
     "/{region_id}/weather/{weather_id}",
     summary="Удалить погоду в регионе с region_id по weather_id",
+    dependencies=[Depends(authenticate_user)],
 )
 async def delete_weather(
     session: DbSessionDep, service: WeatherServiceDep, region_id: int, weather_id: int

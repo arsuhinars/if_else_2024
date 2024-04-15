@@ -21,5 +21,5 @@ class Forecast(Base):
     weather: Mapped[list["Weather"]] = relationship(
         back_populates="forecasts",
         secondary=weather_forecast_table,
-        cascade="save-update, merge, delete",
+        cascade="save-update, merge",
     )

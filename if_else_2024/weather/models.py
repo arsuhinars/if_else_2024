@@ -38,10 +38,11 @@ class Weather(Base):
     measurement_date_time: Mapped[datetime]
 
     region: Mapped["Region"] = relationship(
-        back_populates="weather", foreign_keys=[region_id]
+        back_populates="weather", foreign_keys=[region_id], lazy="joined"
     )
     forecasts: Mapped[list["Forecast"]] = relationship(
         back_populates="weather",
         secondary=weather_forecast_table,
-        cascade="save-update, merge, delete",
+        cascade="save-update, merge",
+        lazy="selectin",
     )

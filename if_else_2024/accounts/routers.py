@@ -4,7 +4,11 @@ from annotated_types import Ge
 from fastapi import APIRouter, Depends, Path, Query, status
 
 from if_else_2024.accounts.dto import AccountDto, UpdateAccountDto
-from if_else_2024.auth.dependencies import AuthSessionDep, is_authenticated
+from if_else_2024.auth.dependencies import (
+    AuthSessionDep,
+    authenticate_user,
+    is_authenticated,
+)
 from if_else_2024.core.dependencies import AccountServiceDep, DbSessionDep
 from if_else_2024.core.exceptions import ForbiddenException
 
@@ -23,6 +27,7 @@ router = APIRouter(prefix="/accounts", tags=["Аккаунты"])
         "параметр отвечает за количество пропущенных элементов от начала. "
         "Второй - за количество элементов на странице"
     ),
+    dependencies=[Depends(authenticate_user)],
 )
 async def search_accounts(
     session: DbSessionDep,
@@ -45,6 +50,7 @@ async def search_accounts(
             "description": "Аккаунта с указанным id не существует"
         },
     },
+    dependencies=[Depends(authenticate_user)],
 )
 async def get_account_by_id(
     session: DbSessionDep, service: AccountServiceDep, id: Annotated[int, Ge(1), Path()]

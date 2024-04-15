@@ -179,7 +179,7 @@ class RegionService:
             region.region_type = region_type
 
         if account_id != region.account_id:
-            account = self._account_repository.get_by_id(session, account_id)
+            account = await self._account_repository.get_by_id(session, account_id)
             if account is None:
                 raise EntityNotFoundException("Account with given id was not found")
             region.account = account

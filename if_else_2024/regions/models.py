@@ -39,7 +39,7 @@ class Region(Base):
         back_populates="region", cascade="save-update, merge, delete"
     )
     current_weather: Mapped[Optional[Weather]] = relationship(
-        foreign_keys=[current_weather_id]
+        foreign_keys=[current_weather_id], post_update=True
     )
     weather: Mapped[list[Weather]] = relationship(
         back_populates="region",
