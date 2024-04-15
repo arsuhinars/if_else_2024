@@ -66,7 +66,7 @@ class CreateWeatherDto(BaseModel):
 
 
 class UpdateWeatherDto(BaseModel):
-    region_name: Annotated[str, Field(serialization_alias="regionName"), NonEmptyStr]
+    region_name: Annotated[str, Field(validation_alias="regionName"), NonEmptyStr]
     temperature: float
     humidity: float
     wind_speed: Annotated[float, Field(validation_alias="windSpeed"), Ge(0)]
