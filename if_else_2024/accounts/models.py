@@ -19,7 +19,9 @@ class Account(Base):
     auth_session: Mapped[Optional["AuthSession"]] = relationship(
         back_populates="account", cascade="save-update, merge, delete"
     )
-    regions: Mapped[list["Region"]] = relationship(back_populates="account")
+    regions: Mapped[list["Region"]] = relationship(
+        back_populates="account", cascade="save-update, merge, delete"
+    )
 
     # TODO: add indexes
     __table_args__ = (UniqueConstraint("email"),)

@@ -6,7 +6,6 @@ from if_else_2024.auth.utils import pass_context
 from if_else_2024.core.exceptions import (
     EntityAlreadyExistsException,
     EntityNotFoundException,
-    IntegrityBreachException,
 )
 from if_else_2024.regions.repositories import RegionRepository
 
@@ -62,8 +61,5 @@ class AccountService:
         account = await self._repository.get_by_id(session, id)
         if account is None:
             raise EntityNotFoundException("Account with given id was not found")
-
-        if await self._region_repository.exists_by_account_id(session, id):
-            raise IntegrityBreachException("Account is creator of some regions")
 
         await self._repository.delete(session, account)
