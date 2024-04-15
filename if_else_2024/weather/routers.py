@@ -59,10 +59,9 @@ async def search_weather(
 async def create_weather_for_region(
     session: DbSessionDep,
     service: WeatherServiceDep,
-    region_id: int,
     dto: CreateWeatherDto,
 ) -> WeatherDto:
-    weather = await service.create_current_for_region(session, region_id, dto)
+    weather = await service.create_current_for_region(session, dto)
     return WeatherDto.model_validate(weather)
 
 

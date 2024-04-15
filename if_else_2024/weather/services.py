@@ -22,14 +22,16 @@ class WeatherService:
         self._region_repository = region_repository
 
     async def create_current_for_region(
-        self, session: AsyncSession, region_id: int, dto: CreateWeatherDto
+        self, session: AsyncSession, dto: CreateWeatherDto
     ):
-        region = await self._region_repository.get_by_id(session, region_id)
+        region = await self._region_repository.get_by_id(session, dto.region_id)
         if region is None:
             raise EntityNotFoundException("Region with given id was not found")
 
         forecasts = [
-            await self._forecast_repository.get_by_region_and_id(session, region_id, id)
+            await self._forecast_repository.get_by_region_and_id(
+                session, dto.region_id, id
+            )
             for id in dto.weather_forecast
         ]
         if None in forecasts:
@@ -127,7 +129,9 @@ class WeatherService:
 
         weather = await self._weather_repository.get_by_id(session, id)
         if weather is None or weather.region_id != region_id:
-            raise EntityNotFoundException("There is no current weather in this region")
+            raise EntityNotFoundException(
+                "There is no weather with given id in this region"
+            )
 
         region.current_weather = weather
         await self._region_repository.save(session, region)
