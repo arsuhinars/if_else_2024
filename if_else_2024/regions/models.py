@@ -34,7 +34,10 @@ class Region(Base):
 
     region_type: Mapped[RegionType] = relationship(back_populates="regions")
     account: Mapped["Account"] = relationship(back_populates="regions")
-    parent_region: Mapped[Optional["Region"]] = relationship()
+    parent_region: Mapped[Optional["Region"]] = relationship(
+        back_populates="child_regions", foreign_keys=[parent_region_id], remote_side=id
+    )
+    child_regions: Mapped[list["Region"]] = relationship(back_populates="parent_region")
     forecasts: Mapped[list["Forecast"]] = relationship(
         back_populates="region", cascade="save-update, merge, delete"
     )
